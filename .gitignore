@@ -6,3 +6,4 @@ exec/lib/*.so
 *.o
 *.swp
 .DS_Store
+server.log
