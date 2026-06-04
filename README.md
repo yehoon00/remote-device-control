@@ -44,6 +44,12 @@ gcc -Wall -O2 -o exec/client code/client/client.c -lpthread
 
 ---
 
+## 🛠️ 하드웨어 구성 및 회로도
+
+![회로도](./misc/schematic.png)
+
+---
+
 ## 📁 디렉터리 구조
 
 ```text
