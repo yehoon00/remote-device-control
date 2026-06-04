@@ -1,0 +1,8 @@
+exec/server
+exec/client
+
+exec/lib/*.so
+
+*.o
+*.swp
+.DS_Store
