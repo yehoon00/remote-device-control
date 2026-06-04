@@ -2,6 +2,8 @@
 #include <softTone.h>
 #include "buzzer.h" 
 
+int song_count = SONG_COUNT;
+
 int notes[SONG_COUNT][TOTAL] = {
     // [0] 학교종 
     {

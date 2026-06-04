@@ -9,11 +9,7 @@
 #include <signal.h>
 #include <time.h>
 #include <stdarg.h>
-
-#include "led.h"
-#include "buzzer.h"
-#include "sensor.h"
-#include "segment.h"
+#include <dlfcn.h>
 
 #define TCP_PORT    5100
 #define LOG_FILE    "server.log"
@@ -26,6 +22,32 @@ typedef struct {
 // 스레드가 실행할 함수 프로토타입
 void *client_handler(void *arg);
 void write_log(const char *format, ...);
+
+void *led_handle = NULL;
+void *buzzer_handle = NULL;
+void *sensor_handle = NULL;
+void *segment_handle = NULL;
+
+void (*dyn_led_init)() = NULL;
+void (*dyn_led_on)() = NULL;
+void (*dyn_led_off)() = NULL;
+void (*dyn_set_brightness)(int) = NULL;
+
+void (*dyn_buzzer_init)() = NULL;
+void (*dyn_buzzer_on)(int) = NULL;
+void (*dyn_buzzer_off)() = NULL;
+
+void (*dyn_sensor_init)() = NULL;
+void (*dyn_sensor_on)(int) = NULL;
+void (*dyn_sensor_off)() = NULL;
+
+void (*dyn_segment_init)() = NULL;
+void (*dyn_segment_countdown)(int) = NULL;
+void (*dyn_segment_stop)() = NULL;
+
+int *dyn_pwm_val = NULL;
+int *dyn_current_client_sock = NULL;
+int *dyn_song_count = NULL;
 
 int main(int argc, char **argv)
 {   
@@ -43,11 +65,44 @@ int main(int argc, char **argv)
 
     write_log("====== Daemon server started successfully. (Port: %d) ======", TCP_PORT);
 
+    led_handle = dlopen("./exec/lib/libled.so", RTLD_LAZY | RTLD_GLOBAL);
+    buzzer_handle = dlopen("./exec/lib/libbuzzer.so", RTLD_LAZY | RTLD_GLOBAL);
+    sensor_handle = dlopen("./exec/lib/libsensor.so", RTLD_LAZY | RTLD_GLOBAL);
+    segment_handle = dlopen("./exec/lib/libsegment.so", RTLD_LAZY | RTLD_GLOBAL);
+
+    if (!led_handle || !buzzer_handle || !sensor_handle || !segment_handle) {
+        write_log("ERROR: dlopen failed. LED:%p, BUZZER:%p, SENSOR:%p, SEGMENT:%p", 
+                  led_handle, buzzer_handle, sensor_handle, segment_handle);
+        return -1;
+    }
+
+    dyn_led_init       = dlsym(led_handle, "led_init");
+    dyn_led_on         = dlsym(led_handle, "led_on");
+    dyn_led_off        = dlsym(led_handle, "led_off");
+    dyn_set_brightness = dlsym(led_handle, "set_brightness");
+
+    dyn_buzzer_init    = dlsym(buzzer_handle, "buzzer_init");
+    dyn_buzzer_on      = dlsym(buzzer_handle, "buzzer_on");
+    dyn_buzzer_off     = dlsym(buzzer_handle, "buzzer_off");
+
+    dyn_sensor_init    = dlsym(sensor_handle, "sensor_init");
+    dyn_sensor_on      = dlsym(sensor_handle, "sensor_on");
+    dyn_sensor_off     = dlsym(sensor_handle, "sensor_off");
+
+    dyn_segment_init      = dlsym(segment_handle, "segment_init");
+    dyn_segment_countdown = dlsym(segment_handle, "segment_countdown");
+    dyn_segment_stop      = dlsym(segment_handle, "segment_stop");
+
+    dyn_pwm_val             = (int *)dlsym(led_handle, "pwm_val");
+    dyn_current_client_sock = (int *)dlsym(sensor_handle, "current_client_sock");
+    dyn_song_count          = (int *)dlsym(buzzer_handle, "song_count");
+
+    // 초기화 수행
     wiringPiSetupGpio();
-    led_init();
-    buzzer_init();
-    sensor_init();
-    segment_init();
+    if (dyn_led_init) dyn_led_init();
+    if (dyn_buzzer_init) dyn_buzzer_init();
+    if (dyn_sensor_init) dyn_sensor_init();
+    if (dyn_segment_init) dyn_segment_init();
 
     if((ssock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         write_log("ERROR: socket() creation failed");
@@ -102,6 +157,12 @@ int main(int argc, char **argv)
     }
 
     close(ssock);
+
+    if(led_handle) dlclose(led_handle);
+    if(buzzer_handle) dlclose(buzzer_handle);
+    if(sensor_handle) dlclose(sensor_handle);
+    if(segment_handle) dlclose(segment_handle);
+
     return 0;
 }
 
@@ -165,19 +226,18 @@ void *client_handler(void *arg) {
         char reply_detail[BUFSIZ] = "";
 
         if (strcmp(mesg, "1") == 0) {
-            led_on();
+            if (dyn_led_on) dyn_led_on();
             strcpy(reply_detail, "LED ON");
         } 
         else if (strcmp(mesg, "2") == 0) {
-            led_off();
+            if (dyn_led_off) dyn_led_off();
             strcpy(reply_detail, "LED OFF");
         } 
         else if (strncmp(mesg, "3 ", 2) == 0) {
             int level = atoi(mesg + 2); // "3 " 뒷부분 문자열을 숫자로 변환
             
             if (level >= 1 && level <= 3) {
-                set_brightness(level);
-
+                if (dyn_set_brightness) dyn_set_brightness(level);
                 char *level_str = (level == 3) ? "MAX" : (level == 2) ? "MID" : "MIN";
                 snprintf(reply_detail, sizeof(reply_detail), "Set LED Brightness to %s", level_str);
             } else {
@@ -191,8 +251,10 @@ void *client_handler(void *arg) {
                 song_idx = atoi(mesg + 2);
             }
 
-            if (song_idx >= 0 && song_idx < SONG_COUNT) {
-                buzzer_on(song_idx);
+            int max_songs = dyn_song_count ? *dyn_song_count : 0;
+
+            if (song_idx >= 0 && song_idx < max_songs) {
+                if (dyn_buzzer_on) dyn_buzzer_on(song_idx);
                 
                 char *song_names[] = {"School Bell", "Airplane", "Jingle Bells"};
                 snprintf(reply_detail, sizeof(reply_detail), "BUZZER ON (%s)", song_names[song_idx]);
@@ -201,24 +263,24 @@ void *client_handler(void *arg) {
             }
         } 
         else if (strcmp(mesg, "5") == 0) {
-            buzzer_off();
+            if (dyn_buzzer_off) dyn_buzzer_off();
             strcpy(reply_detail, "BUZZER OFF");
         } 
         else if (strcmp(mesg, "6") == 0) {
-            sensor_on(csock);
+            if (dyn_sensor_on) dyn_sensor_on(csock);
             strcpy(reply_detail, "SENSOR ON");
         } 
         else if (strcmp(mesg, "7") == 0) {
-            sensor_off();
+            if (dyn_sensor_off) dyn_sensor_off();
             strcpy(reply_detail, "SENSOR OFF");
         } 
         else if (strncmp(mesg, "8 ", 2) == 0) {
             int num = atoi(mesg + 2); // "8 " 뒷부분 문자열을 숫자로 변환
-            segment_countdown(num);
+            if (dyn_segment_countdown) dyn_segment_countdown(num);
             snprintf(reply_detail, sizeof(reply_detail), "SEGMENT displaying %d and counting down", num);
         } 
         else if (strcmp(mesg, "9") == 0) {
-            segment_stop();
+            if (dyn_segment_stop) dyn_segment_stop();
             strcpy(reply_detail, "SEGMENT STOP");
         } 
         else {
@@ -238,13 +300,14 @@ void *client_handler(void *arg) {
         }
     }
     
-    led_off();
-    pwm_val = 255;
-    buzzer_off();
-    segment_stop();
+    if (dyn_led_off) dyn_led_off();
+    if (dyn_pwm_val) *dyn_pwm_val = 255;
+    if (dyn_buzzer_off) dyn_buzzer_off();
+    if (dyn_segment_stop) dyn_segment_stop();
 
-    if (current_client_sock == csock)
-        sensor_off();
+    if (dyn_current_client_sock && *dyn_current_client_sock == csock) {
+        if (dyn_sensor_off) dyn_sensor_off();
+    }
 
     write_log("◀ [DISCONNECTED] Client connection closed. (IP: %s, Port: %d)", cli_ip, cli_port);
 
