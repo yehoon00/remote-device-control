@@ -106,7 +106,25 @@ int main(int argc, char **argv)
                     snprintf(cmd, sizeof(cmd), "3 %s", bright_val);
                 }
                 break;
-            case 4: strcpy(cmd, "4"); break;
+            case 4:
+                printf("\nSelect Melody\n");
+                printf("1: School Bell(학교종)   2: Airplane(비행기)   3: Jingle Bells(징글벨)\n");
+                printf("Select Song: ");
+                fflush(stdout);
+
+                char song_val[10];
+                if (fgets(song_val, sizeof(song_val), stdin) != NULL) {
+                    song_val[strcspn(song_val, "\n")] = '\0';
+
+                    int s_idx = atoi(song_val) - 1;
+                    if (strlen(song_val) > 0 && s_idx >= 0 && s_idx <= 2) {
+                        snprintf(cmd, sizeof(cmd), "4 %d", s_idx);
+                    } else {
+                        printf("[Warning] Invalid song selection. Defaulting to Butterfly.\n");
+                        strcpy(cmd, "4 0");
+                    }
+                }
+                break;
             case 5: strcpy(cmd, "5"); break;
             case 6: strcpy(cmd, "6"); break; // SENSOR ON 명령 전송
             case 7: strcpy(cmd, "7"); break; // SENSOR OFF 명령 전송

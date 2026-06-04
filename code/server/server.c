@@ -164,9 +164,6 @@ void *client_handler(void *arg) {
         int is_valid = 1;
         char reply_detail[BUFSIZ] = "";
 
-        // ────────────────────────────────────────────────────────
-        // [수정] 문자열 파싱 없이 클라이언트가 보낸 데이터 그대로 비교
-        // ────────────────────────────────────────────────────────
         if (strcmp(mesg, "1") == 0) {
             led_on();
             strcpy(reply_detail, "LED ON");
@@ -175,7 +172,6 @@ void *client_handler(void *arg) {
             led_off();
             strcpy(reply_detail, "LED OFF");
         } 
-        // 3번이나 8번처럼 추가 데이터가 붙는 경우 (예: "3 50", "8 7")
         else if (strncmp(mesg, "3 ", 2) == 0) {
             int level = atoi(mesg + 2); // "3 " 뒷부분 문자열을 숫자로 변환
             
@@ -188,9 +184,21 @@ void *client_handler(void *arg) {
                 is_valid = 0;
             }
         }
-        else if (strcmp(mesg, "4") == 0) {
-            buzzer_on();
-            strcpy(reply_detail, "BUZZER ON");
+        else if (strncmp(mesg, "4", 1) == 0) {
+            int song_idx = 0;
+
+            if (strncmp(mesg, "4 ", 2) == 0) {
+                song_idx = atoi(mesg + 2);
+            }
+
+            if (song_idx >= 0 && song_idx < SONG_COUNT) {
+                buzzer_on(song_idx);
+                
+                char *song_names[] = {"School Bell", "Airplane", "Jingle Bells"};
+                snprintf(reply_detail, sizeof(reply_detail), "BUZZER ON (%s)", song_names[song_idx]);
+            } else {
+                is_valid = 0;
+            }
         } 
         else if (strcmp(mesg, "5") == 0) {
             buzzer_off();

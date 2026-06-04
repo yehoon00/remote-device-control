@@ -75,8 +75,8 @@ gcc -Wall -O2 -o exec/client code/client/client.c -lpthread
 
 ```text
 [ Device Control Menu ]
-1. LED ON          2. LED OFF          3. Set Brightness (최대/중간/최저)
-4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON (실시간 모니터링)
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
 7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
 0. Exit
 ```
