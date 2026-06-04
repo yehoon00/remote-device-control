@@ -69,7 +69,7 @@ void *segment_countdown_thread(void *arg)
         segment_display(i);
 
         if (i == 0) {
-            buzzer_on(); // 0이 되는 순간 노래/부저 재생 시작 (libbuzzer.so 연동)
+            play_warning_beep();
             delay(1000); // 0을 잠시 보여줌
             break;
         }

@@ -7,19 +7,19 @@ int led_state = 0;
 
 void led_init()
 {
-    softPwmCreate(LED_PIN, 0, 255);
+    softPwmCreate(LED_PIN, 255, 255);
 }
 
 void led_on()
 {
     led_state = 1;
-    softPwmWrite(LED_PIN, pwm_val);
+    softPwmWrite(LED_PIN, 255 - pwm_val);
 }
 
 void led_off()
 {
     led_state = 0;
-    softPwmWrite(LED_PIN, 0);
+    softPwmWrite(LED_PIN, 255);
 }
 
 void set_brightness(int level)
@@ -30,5 +30,5 @@ void set_brightness(int level)
     else                 pwm_val = 0;
 
     if (led_state == 1)
-        softPwmWrite(LED_PIN, pwm_val);
+        softPwmWrite(LED_PIN, 255 - pwm_val);
 }

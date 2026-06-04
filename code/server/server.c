@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <wiringPi.h>
 #include <signal.h>
+#include <time.h>
+#include <stdarg.h>
 
 #include "led.h"
 #include "buzzer.h"
@@ -14,9 +16,16 @@
 #include "segment.h"
 
 #define TCP_PORT    5100
+#define LOG_FILE    "server.log"
+
+typedef struct {
+    int sock;
+    struct sockaddr_in addr;
+} client_info_t;
 
 // 스레드가 실행할 함수 프로토타입
 void *client_handler(void *arg);
+void write_log(const char *format, ...);
 
 int main(int argc, char **argv)
 {   
@@ -27,10 +36,12 @@ int main(int argc, char **argv)
     socklen_t clen;
     struct sockaddr_in servaddr, cliaddr;
 
-    if (daemon(0, 0) < 0) {
+    if (daemon(1, 0) < 0) {
         perror("daemon()");
         return -1;
     }
+
+    write_log("====== Daemon server started successfully. (Port: %d) ======", TCP_PORT);
 
     wiringPiSetupGpio();
     led_init();
@@ -39,7 +50,7 @@ int main(int argc, char **argv)
     segment_init();
 
     if((ssock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket()");
+        write_log("ERROR: socket() creation failed");
         return -1;
     }
 
@@ -52,12 +63,12 @@ int main(int argc, char **argv)
     servaddr.sin_port = htons(TCP_PORT);
 
     if(bind(ssock, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-        perror("bind()");
+        write_log("ERROR: bind() failed");
         return -1;
     }
 
     if(listen(ssock, 8) < 0) {
-        perror("listen()");
+        write_log("ERROR: listen() failed");
         return -1;
     }
 
@@ -67,20 +78,23 @@ int main(int argc, char **argv)
         // 새로운 클라이언트 접속 수락
         int csock = accept(ssock, (struct sockaddr *)&cliaddr, &clen);
         if (csock < 0) {
-            perror("accept()");
+            write_log("ERROR: accept() failed");
             continue;
         }
 
-        // malloc을 사용해 클라이언트 소켓 디스크립터를 동적 할당 (스레드 간 데이터 오염 방지)
-        int *new_sock = malloc(sizeof(int));
-        *new_sock = csock;
+        client_info_t *cinfo = malloc(sizeof(client_info_t));
+        cinfo->sock = csock;
+        cinfo->addr = cliaddr;
+       
+        write_log("▶ [CONNECTED] Client connected from IP: %s, Port: %d",
+                  inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
 
         // 클라이언트 전용 스레드 생성
         pthread_t t_id;
-        if (pthread_create(&t_id, NULL, client_handler, (void *)new_sock) != 0) {
-            perror("pthread_create() 실패");
+        if (pthread_create(&t_id, NULL, client_handler, (void *)cinfo) != 0) {
+            write_log("ERROR: pthread_create() failed");
             close(csock);
-            free(new_sock);
+            free(cinfo);
         }
         
         // 스레드가 종료되면 자동으로 자원을 반환하도록 설정
@@ -91,13 +105,42 @@ int main(int argc, char **argv)
     return 0;
 }
 
+void write_log(const char *format, ...) {
+    FILE *fp = fopen(LOG_FILE, "a"); // Append 모드로 오픈
+    if (fp == NULL) return;
+
+    time_t timer = time(NULL);
+    struct tm *t = localtime(&timer);
+    
+    // 타임스탬프 선두 전송
+    fprintf(fp, "[%04d-%02d-%02d %02d:%02d:%02d] ",
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+            t->tm_hour, t->tm_min, t->tm_sec);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(fp, format, args);
+    va_end(args);
+
+    fprintf(fp, "\n");
+    fflush(fp); // 버퍼에 머물지 않고 즉시 파일에 쓰도록 강제
+    fclose(fp);
+}
+
 // 클라이언트와 1:1로 통신하는 스레드 메인 함수
 void *client_handler(void *arg) {
-    int csock = *((int *)arg);
-    free(arg); // 동적 할당된 메모리 해제
+    client_info_t *cinfo = (client_info_t *)arg;
+    int csock = cinfo->sock;
+    struct sockaddr_in cliaddr = cinfo->addr;
+    free(cinfo); // 동적 할당된 메모리 해제
     
     char mesg[BUFSIZ];
     int n;
+
+    char cli_ip[32];
+    int cli_port = ntohs(cliaddr.sin_port);
+    strncpy(cli_ip, inet_ntoa(cliaddr.sin_addr), sizeof(cli_ip) - 1);
+    cli_ip[sizeof(cli_ip) - 1] = '\0';
 
     while(1) {
         memset(mesg, 0, BUFSIZ);
@@ -112,9 +155,12 @@ void *client_handler(void *arg) {
         mesg[strcspn(mesg, "\r\n")] = '\0'; // 개행 문자 제거
 
         if (strcasecmp(mesg, "exit") == 0) {
+            write_log("[COMMAND] Client (%s:%d) requested disconnect.", cli_ip, cli_port);
             break;
         }
         
+        write_log("[RECEIVED] Client (%s:%d) -> Command: \"%s\"", cli_ip, cli_port, mesg);
+
         int is_valid = 1;
         char reply_detail[BUFSIZ] = "";
 
@@ -176,11 +222,10 @@ void *client_handler(void *arg) {
         if (is_valid) {
             snprintf(reply, sizeof(reply), "[Command %s] Processed successfully\n", reply_detail);
         } else {
-            snprintf(reply, sizeof(reply), "Invalid command request (%s).\n", mesg);
+            snprintf(reply, sizeof(reply), "Invalid command request (%.8100s).\n", mesg);
         }
 
         if (write(csock, reply, strlen(reply)) <= 0) {
-            perror("write()");
             break;
         }
     }
@@ -192,6 +237,8 @@ void *client_handler(void *arg) {
 
     if (current_client_sock == csock)
         sensor_off();
+
+    write_log("◀ [DISCONNECTED] Client connection closed. (IP: %s, Port: %d)", cli_ip, cli_port);
 
     close(csock);
     return NULL;

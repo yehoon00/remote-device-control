@@ -50,4 +50,20 @@ void buzzer_off()
         buzzer_state = 0;
         pthread_join(buzzer_thread_id, NULL);
     }
+    softToneWrite(BUZZER_PIN, 0);
+}
+
+void play_warning_beep()
+{
+    if (buzzer_state == 1) {
+        buzzer_state = 0;
+        pthread_join(buzzer_thread_id, NULL);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        softToneWrite(BUZZER_PIN, 2000);
+        delay(100);
+        softToneWrite(BUZZER_PIN, 0);
+        delay(100);
+    }
 }

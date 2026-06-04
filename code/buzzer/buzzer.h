@@ -14,5 +14,6 @@ void buzzer_init();
 void buzzer_on();
 void buzzer_off();
 void *music_play_thread(void *arg);
+void play_warning_beep();
 
 #endif
