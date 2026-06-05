@@ -1,0 +1,21 @@
+yehoon@yehoonBox:~/temp $ ./exec/server
+yehoon@yehoonBox:~/temp $ cat server.log
+[2026-06-05 09:06:12] ====== Daemon server started successfully. (Port: 5100) ======
+yehoon@yehoonBox:~/temp $ cat server.log
+[2026-06-05 09:06:12] ====== Daemon server started successfully. (Port: 5100) ======
+[2026-06-05 09:06:41] ▶ [CONNECTED] Client connected from IP: 172.20.35.211, Port: 52540
+[2026-06-05 09:06:45] [RECEIVED] Client (172.20.35.211:52540) -> Command: "1"
+[2026-06-05 09:06:48] [RECEIVED] Client (172.20.35.211:52540) -> Command: "3 1"
+[2026-06-05 09:06:50] [RECEIVED] Client (172.20.35.211:52540) -> Command: "3 2"
+[2026-06-05 09:06:52] [RECEIVED] Client (172.20.35.211:52540) -> Command: "3 3"
+[2026-06-05 09:06:55] [RECEIVED] Client (172.20.35.211:52540) -> Command: "2"
+[2026-06-05 09:06:57] [RECEIVED] Client (172.20.35.211:52540) -> Command: "4 0"
+[2026-06-05 09:06:59] [RECEIVED] Client (172.20.35.211:52540) -> Command: "4 1"
+[2026-06-05 09:07:01] [RECEIVED] Client (172.20.35.211:52540) -> Command: "4 2"
+[2026-06-05 09:07:02] [RECEIVED] Client (172.20.35.211:52540) -> Command: "5"
+[2026-06-05 09:07:04] [RECEIVED] Client (172.20.35.211:52540) -> Command: "6"
+[2026-06-05 09:07:08] [RECEIVED] Client (172.20.35.211:52540) -> Command: "8 4"
+[2026-06-05 09:07:11] [RECEIVED] Client (172.20.35.211:52540) -> Command: "9"
+[2026-06-05 09:07:13] [RECEIVED] Client (172.20.35.211:52540) -> Command: "7"
+[2026-06-05 09:07:21] [COMMAND] Client (172.20.35.211:52540) requested disconnect.
+[2026-06-05 09:07:21] ◀ [DISCONNECTED] Client connection closed. (IP: 172.20.35.211, Port: 52540)

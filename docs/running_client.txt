@@ -1,0 +1,159 @@
+yehoon@yehoonBox:~/temp$ ./exec/client 172.20.35.133
+Server Connected.
+
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 1
+
+[Command LED ON] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 3
+Select Brightness Level
+1: MIN (33%)   2: MID (66%)   3: MAX (100%)
+Select Level: 1
+
+[Command Set LED Brightness to MIN] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 3
+Select Brightness Level
+1: MIN (33%)   2: MID (66%)   3: MAX (100%)
+Select Level: 2
+
+[Command Set LED Brightness to MID] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 3
+Select Brightness Level
+1: MIN (33%)   2: MID (66%)   3: MAX (100%)
+Select Level: 3
+
+[Command Set LED Brightness to MAX] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 2
+
+[Command LED OFF] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 4
+
+Select Melody
+1: School Bell(학교종)   2: Airplane(비행기)   3: Jingle Bells(징글벨)
+Select Song: 1
+
+[Command BUZZER ON (School Bell)] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 4
+
+Select Melody
+1: School Bell(학교종)   2: Airplane(비행기)   3: Jingle Bells(징글벨)
+Select Song: 2
+
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select:
+[Command BUZZER ON (Airplane)] Processed successfully4
+
+Select Melody
+1: School Bell(학교종)   2: Airplane(비행기)   3: Jingle Bells(징글벨)
+Select Song: 3
+
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select:
+[Command BUZZER ON (Jingle Bells)] Processed successfully5
+
+[Command BUZZER OFF] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select: 6
+
+[Command SENSOR ON] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select:
+[DATA] Sensor Value: 0
+[DATA] Sensor Value: 0   8
+Enter a number to display (0~9):
+[DATA] Sensor Value: 0
+[DATA] Sensor Value: 0   4
+
+[Command SEGMENT displaying 4 and counting down] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select:
+[DATA] Sensor Value: 0
+[DATA] Sensor Value: 0
+[DATA] Sensor Value: 0   9
+
+[Command SEGMENT STOP] Processed successfully
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select:
+[DATA] Sensor Value: 0   7
+[DATA] Sensor Value: 0
+
+
+[ Device Control Menu ]
+1. LED ON          2. LED OFF          3. Set Brightness
+4. BUZZER ON       5. BUZZER OFF       6. SENSOR ON
+7. SENSOR OFF      8. SEGMENT DISPLAY  9. SEGMENT STOP
+0. Exit
+Select:
+[Command SENSOR OFF] Processed successfully0
+Exiting client.
