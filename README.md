@@ -20,7 +20,7 @@ make
 
 ```bash
 cd ~/LinuxProject
-gcc -Wall -O2 -o exec/client code/client/client.c -lpthread
+mkdir -p exec && gcc -Wall -O2 -o exec/client code/client/client.c -lpthread
 ./exec/client [라즈베리파이_IP]
 ```
 
